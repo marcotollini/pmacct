@@ -213,7 +213,7 @@ avro_schema_t p_avro_schema_build_acct_data(u_int64_t wtc, u_int64_t wtc_2)
     avro_schema_record_field_append(schema, "lat_ip_dst", avro_schema_double());
     avro_schema_record_field_append(schema, "lon_ip_dst", avro_schema_double());
   }
-    
+
 #endif
 
   if (wtc & COUNT_TCPFLAGS) {
@@ -224,7 +224,7 @@ avro_schema_t p_avro_schema_build_acct_data(u_int64_t wtc, u_int64_t wtc_2)
       avro_schema_record_field_append(schema, "tcp_flags", avro_schema_string());
     }
   }
-  
+
   if (wtc_2 & COUNT_FWD_STATUS) {
     if (config.fwd_status_encode_as_string) {
       compose_fwd_status_avro_schema(schema);
@@ -839,14 +839,14 @@ avro_value_t compose_avro_acct_data(u_int64_t wtc, u_int64_t wtc_2, u_int8_t flo
       pm_avro_check(avro_value_set_string(&field, misc_str));
     }
   }
-  
+
   if (wtc_2 & COUNT_FWD_STATUS) {
     sprintf(misc_str, "%u", pnat->fwd_status);
 
     if (config.fwd_status_encode_as_string) {
       compose_fwd_status_avro_data(pnat->fwd_status, value);
     }
-    else { 
+    else {
       pm_avro_check(avro_value_get_by_name(&value, "fwd_status", &field, NULL));
       pm_avro_check(avro_value_set_string(&field, misc_str));
     }
@@ -863,7 +863,7 @@ avro_value_t compose_avro_acct_data(u_int64_t wtc, u_int64_t wtc_2, u_int8_t flo
     if (label_stack_ptr) {
       if (config.mpls_label_stack_encode_as_array) {
 	compose_mpls_label_stack_data((u_int32_t *)label_stack_ptr, label_stack_len, value);
-      } 
+      }
       else {
 	mpls_label_stack_to_str(label_stack, sizeof(label_stack), (u_int32_t *)label_stack_ptr, label_stack_len);
 	pm_avro_check(avro_value_get_by_name(&value, "mpls_label_stack", &field, NULL));
@@ -1250,7 +1250,7 @@ char *compose_avro_purge_schema(avro_schema_t avro_schema, char *writer_name)
 
 char *compose_avro_schema_name(char *extra1, char *extra2)
 {
-  int len_base = 0, len_extra1 = 0, len_extra2 = 0, len_total = 0; 
+  int len_base = 0, len_extra1 = 0, len_extra2 = 0, len_total = 0;
   char *schema_name = NULL;
 
   if (extra1) len_extra1 = strlen(extra1);
@@ -1258,13 +1258,13 @@ char *compose_avro_schema_name(char *extra1, char *extra2)
     if (len_extra1) len_extra1++;
     len_extra2 = strlen(extra2);
   }
-  
+
   if (len_extra1 || len_extra2) len_base = strlen("pmacct_");
   else len_base = strlen("pmacct");
 
   len_total = len_base + len_extra1 + len_extra2 + 1;
 
-  schema_name = malloc(len_total);  
+  schema_name = malloc(len_total);
   if (!schema_name) {
     Log(LOG_ERR, "ERROR ( %s/%s ): compose_avro_schema_name(): malloc() failed. Exiting.\n", config.name, config.type);
     pm_avro_exit_gracefully(1);
@@ -1313,10 +1313,10 @@ serdes_schema_t *compose_avro_schema_registry_name_2(char *topic, int is_topic_d
   strcat(loc_schema_name, "-");
   strcat(loc_schema_name, name);
 
-  loc_schema = compose_avro_schema_registry_name(loc_schema_name, FALSE, avro_schema, NULL, NULL, schema_registry); 
+  loc_schema = compose_avro_schema_registry_name(loc_schema_name, FALSE, avro_schema, NULL, NULL, schema_registry);
   free(loc_schema_name);
 
-  return loc_schema; 
+  return loc_schema;
 }
 
 serdes_schema_t *compose_avro_schema_registry_name(char *topic, int is_topic_dyn,
@@ -1430,7 +1430,7 @@ void compose_label_avro_schema_nonopt(avro_schema_t sc_type_record)
 {
   sc_type_string = avro_schema_string();
   sc_type_map = avro_schema_map(sc_type_string);
-    
+
   avro_schema_record_field_append(sc_type_record, "label", sc_type_map);
 
   /* free-up memory - avro map only*/
@@ -1584,7 +1584,7 @@ int compose_fwd_status_avro_data(size_t fwdstatus_decimal, avro_value_t v_type_r
   size_t ll_size = cdada_list_size(ll);
 
   avro_value_t v_type_string;
-  
+
   /* default fwdstatus */
   if ((fwdstatus_decimal >= 0) && (fwdstatus_decimal <= 63)) {
     if (avro_value_get_by_name(&v_type_record, "fwd_status", &v_type_string, NULL) == 0) {
@@ -1622,7 +1622,7 @@ int compose_fwd_status_avro_data(size_t fwdstatus_decimal, avro_value_t v_type_r
       }
     }
   }
-  
+
   /* free-up memory */
   cdada_list_destroy(ll);
 
@@ -1653,17 +1653,15 @@ int compose_mpls_label_stack_data(u_int32_t *label_stack, int ls_len, avro_value
     memset(&label_buf, 0, sizeof(label_buf));
     snprintf(label_buf, MAX_MPLS_LABEL_LEN, "%u", *(label_stack + idx_0));
     if (avro_value_get_by_name(&v_type_record, "mpls_label_stack", &v_type_array, NULL) == 0) {
-      if (strncmp("0", label_buf, 1)) {
-        memset(&idx_buf, 0, sizeof(idx_buf));
-        memset(&label_idx_buf, 0, sizeof(label_idx_buf));
-        snprintf(idx_buf, MAX_IDX_LEN, "%zu", idx_0);
-        strncat(label_idx_buf, idx_buf, (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
-        strncat(label_idx_buf, "-", (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
-        strncat(label_idx_buf, label_buf, (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
-        max_mpls_label_idx_len_dec = (strlen(idx_buf) + strlen("-") + strlen(label_buf) + 3);
-        if (avro_value_append(&v_type_array, &v_type_string, NULL) == 0) {
-          avro_value_set_string(&v_type_string, label_idx_buf);
-        }
+      memset(&idx_buf, 0, sizeof(idx_buf));
+      memset(&label_idx_buf, 0, sizeof(label_idx_buf));
+      snprintf(idx_buf, MAX_IDX_LEN, "%zu", idx_0);
+      strncat(label_idx_buf, idx_buf, (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
+      strncat(label_idx_buf, "-", (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
+      strncat(label_idx_buf, label_buf, (MAX_MPLS_LABEL_IDX_LEN - max_mpls_label_idx_len_dec));
+      max_mpls_label_idx_len_dec = (strlen(idx_buf) + strlen("-") + strlen(label_buf) + 3);
+      if (avro_value_append(&v_type_array, &v_type_string, NULL) == 0) {
+        avro_value_set_string(&v_type_string, label_idx_buf);
       }
     }
   }
